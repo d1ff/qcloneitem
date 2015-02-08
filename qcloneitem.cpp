@@ -143,6 +143,7 @@ bool QCloneItemPrivate::enable()
     m_thumbnailProperties.rcSource.top = 0;
     m_thumbnailProperties.rcSource.right = size.cx;
     m_thumbnailProperties.rcSource.bottom = size.cy;
+    emit q->thumbnailPropertiesChanged();
     return true;
 }
 
