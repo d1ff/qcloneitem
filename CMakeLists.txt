@@ -31,8 +31,8 @@ if(include_example)
         ${CMAKE_BINARY_DIR}/main.qml
         ${CMAKE_BINARY_DIR}/Clone/qmldir
         ${CMAKE_BINARY_DIR}/Clone/qcloneitem.dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/run.cmd" "${CMAKE_BINARY_DIR}/run.cmd"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/main.qml" "${CMAKE_BINARY_DIR}/main.qml"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/example/run.cmd" "${CMAKE_BINARY_DIR}/run.cmd"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/example/main.qml" "${CMAKE_BINARY_DIR}/main.qml"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/qmldir" "${CMAKE_BINARY_DIR}/Clone/qmldir"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:qcloneitem>" "${CMAKE_BINARY_DIR}/Clone/qcloneitem.dll"
         DEPENDS ${CMAKE_SOURCE_DIR}/main.qml ${CMAKE_SOURCE_DIR}/qmldir qcloneitem)
