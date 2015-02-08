@@ -1,26 +1,39 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(qclonewindow)
+project(qcloneitem)
 
 set(CMAKE_PREFIX_PATH "C:/Qt/5.4/msvc2013_64" CACHE PATH "Qt 5 install dir")
 set(CMAKE_AUTOMOC true)
+set(CMAKE_INCLUDE_CURRENT_DIR true)
 
-find_package(Qt5 COMPONENTS Qml Gui Quick Widgets REQUIRED)
+option(include_example "Set up example in build dir" OFF)
 
-add_executable(qclonewindow WIN32
-    main.cpp 
-    qcloneitem.cpp 
-    qcloneitem.h
-    main.qml)
+find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-add_dependencies(qclonewindow output_dir_copy)
+add_library(qcloneitem SHARED
+    qcloneitemplugin.cpp
+    qcloneitem.cpp
+    qcloneitem.h)
 
-target_compile_options(qclonewindow PRIVATE -W4 -wd4127 -wd6326 -analyze)
-target_compile_definitions(qclonewindow PRIVATE _UNICODE UNICODE)
-target_link_libraries(qclonewindow Qt5::Qml Qt5::Gui Qt5::Quick Qt5::Widgets)
+target_compile_options(qcloneitem PRIVATE -W4 -wd4127 -wd6326 -analyze)
+target_compile_definitions(qcloneitem PRIVATE _UNICODE UNICODE)
+target_link_libraries(qcloneitem Qt5::Quick)
 
-add_custom_target(output_dir_copy DEPENDS ${CMAKE_BINARY_DIR}/main.qml)
+if(include_example)
+    add_custom_target(output_dir_copy ALL DEPENDS
+        ${CMAKE_BINARY_DIR}/run.cmd
+        ${CMAKE_BINARY_DIR}/main.qml
+        ${CMAKE_BINARY_DIR}/Clone/qmldir
+        ${CMAKE_BINARY_DIR}/Clone/qcloneitem.dll)
 
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/main.qml
-					COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/main.qml" "${CMAKE_BINARY_DIR}/main.qml"
-					DEPENDS ${CMAKE_SOURCE_DIR}/main.qml)
+    add_custom_command(OUTPUT
+        ${CMAKE_BINARY_DIR}/run.cmd
+        ${CMAKE_BINARY_DIR}/main.qml
+        ${CMAKE_BINARY_DIR}/Clone/qmldir
+        ${CMAKE_BINARY_DIR}/Clone/qcloneitem.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/run.cmd" "${CMAKE_BINARY_DIR}/run.cmd"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/main.qml" "${CMAKE_BINARY_DIR}/main.qml"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/qmldir" "${CMAKE_BINARY_DIR}/Clone/qmldir"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:qcloneitem>" "${CMAKE_BINARY_DIR}/Clone/qcloneitem.dll"
+        DEPENDS ${CMAKE_SOURCE_DIR}/main.qml ${CMAKE_SOURCE_DIR}/qmldir qcloneitem)
+endif(include_example)

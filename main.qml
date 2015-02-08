@@ -1,6 +1,6 @@
 import QtQuick 2.0
-import QCloneItem 1.0
 import QtQuick.Controls 1.3
+import Clone 1.0
 
 Item {
     id: root
