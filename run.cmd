@@ -1,2 +1,2 @@
-qmlscene --resize-to-root -I . main.qml
+qmlscene -I . main.qml
 pause
