@@ -7,14 +7,12 @@ set(CMAKE_AUTOMOC true)
 
 find_package(Qt5 COMPONENTS Qml Gui Quick Widgets REQUIRED)
 
-add_executable(qclonewindow WIN32
+add_definitions(-D_UNICODE -DUNICODE)
+
+add_executable(qclonewindow #WIN32
     main.cpp 
-    qclonebase.cpp 
-    qclonebase.h
     qcloneitem.cpp 
     qcloneitem.h
-    qclonewindow.cpp 
-    qclonewindow.h
     main.qml)
 
 add_dependencies(qclonewindow output_dir_copy)

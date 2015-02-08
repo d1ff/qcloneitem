@@ -47,6 +47,7 @@ Item {
             id: clone
             anchors.fill: parent
             anchors.margins: 50
+            windowTitle: "Steam"
         }
 
         Rectangle {
