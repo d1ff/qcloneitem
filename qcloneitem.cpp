@@ -8,35 +8,44 @@
 #pragma comment(lib, "dwmapi.lib")
 
 class QCloneItemPrivate {
+    QCloneItemPrivate(QCloneItem* q) : q(q)
+    {
+        // Initial settings
+        m_thumbnailProperties.fSourceClientAreaOnly = false;
+        m_thumbnailProperties.opacity = 255;
+        m_thumbnailProperties.dwFlags =
+            DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_VISIBLE |
+            DWM_TNP_OPACITY | DWM_TNP_RECTDESTINATION;
+        m_thumbnailProperties.fVisible = true;
+        m_thumbnailProperties.rcDestination.left = 0;
+        m_thumbnailProperties.rcDestination.top = 0;
+        m_thumbnailProperties.rcDestination.right = 0;
+        m_thumbnailProperties.rcDestination.bottom = 0;
+    }
+
+    bool enable();
+    bool disable();
+
+    HWND m_source;
+    HWND m_destination;
+    QCloneItem* q;
     HTHUMBNAIL m_thumbnail;
     DWM_THUMBNAIL_PROPERTIES m_thumbnailProperties;
     friend QCloneItem;
 };
 
-QCloneItem::QCloneItem(QQuickItem * parent) : QQuickItem(parent), d(new QCloneItemPrivate())
+QCloneItem::QCloneItem(QQuickItem * parent) : QQuickItem(parent), d(new QCloneItemPrivate(this))
 {
-    // Initial settings
-    d->m_thumbnailProperties.fSourceClientAreaOnly = false;
-    d->m_thumbnailProperties.opacity = 255;
-    d->m_thumbnailProperties.dwFlags =
-        DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_VISIBLE |
-        DWM_TNP_OPACITY | DWM_TNP_RECTDESTINATION;
-    d->m_thumbnailProperties.fVisible = true;
-    d->m_thumbnailProperties.rcDestination.left = 0;
-    d->m_thumbnailProperties.rcDestination.top = 0;
-    d->m_thumbnailProperties.rcDestination.right = 0;
-    d->m_thumbnailProperties.rcDestination.bottom = 0;
-
     connect(this, &QQuickItem::windowChanged, this, &QCloneItem::onWindowChanged);
     connect(this, &QQuickItem::opacityChanged, this, &QCloneItem::onOpacityChanged);
     connect(this, &QQuickItem::visibleChanged, this, &QCloneItem::onVisibleChanged);
-    connect(this, &QCloneItem::thumbnailPropertiesChanged, this, &QCloneItem::updateThumbnailProperties);
+    connect(this, &QCloneItem::thumbnailPropertiesChanged, this, &QCloneItem::onThumbnailPropertiesChanged);
     connect(this, &QCloneItem::targetWindowChanged, this, &QCloneItem::updateTargetWindow);
 }
 
 QCloneItem::~QCloneItem()
 {
-    disable();
+    d->disable();
 }
 
 void QCloneItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -63,8 +72,8 @@ void QCloneItem::onWindowChanged(QQuickWindow * window)
     if (!window)
         return;
 
-    m_hwnd = (HWND)window->winId();
-    enable(m_target);
+    d->m_destination = (HWND)window->winId();
+    d->enable();
 }
 
 void QCloneItem::onOpacityChanged()
@@ -86,7 +95,7 @@ void QCloneItem::onVisibleChanged()
     emit thumbnailPropertiesChanged();
 }
 
-bool QCloneItem::updateThumbnailProperties()
+bool QCloneItem::onThumbnailPropertiesChanged()
 {
     if (!d->m_thumbnail)
         return false;
@@ -94,45 +103,46 @@ bool QCloneItem::updateThumbnailProperties()
     return SUCCEEDED(DwmUpdateThumbnailProperties(d->m_thumbnail, &(d->m_thumbnailProperties)));
 }
 
-bool QCloneItem::disable()
+bool QCloneItemPrivate::disable()
 {
-    if (d->m_thumbnail)
+    if (m_thumbnail)
     {
-        HRESULT result = DwmUnregisterThumbnail(d->m_thumbnail);
-        d->m_thumbnail = 0;
+        HRESULT result = DwmUnregisterThumbnail(m_thumbnail);
+        m_thumbnail = 0;
         return SUCCEEDED(result);
     }
 
     return true;
 }
 
-bool QCloneItem::enable(HWND target)
+bool QCloneItemPrivate::enable()
 {
-    // Clear old thumbnail
     disable();
 
-    // Check if compositing is available
     BOOL isCompositionEnabled;
-    DwmIsCompositionEnabled(&isCompositionEnabled);
+    if (!SUCCEEDED(DwmIsCompositionEnabled(&isCompositionEnabled)))
+        return false;
+
     if (!isCompositionEnabled)
         return false;
 
-    if (!SUCCEEDED(DwmRegisterThumbnail(m_hwnd, target, &d->m_thumbnail)))
+    if (!SUCCEEDED(DwmRegisterThumbnail(m_destination, m_source, &m_thumbnail)))
         return false;
 
-    if (!updateThumbnailProperties())
+    if (!q->onThumbnailPropertiesChanged())
     {
         disable();
         return false;
     }
 
     SIZE size;
-    DwmQueryThumbnailSourceSize(d->m_thumbnail, &size);
-    d->m_thumbnailProperties.rcSource.left = 0;
-    d->m_thumbnailProperties.rcSource.top = 0;
-    d->m_thumbnailProperties.rcSource.right = size.cx;
-    d->m_thumbnailProperties.rcSource.bottom = size.cy;
+    if (!SUCCEEDED(DwmQueryThumbnailSourceSize(m_thumbnail, &size)))
+        return false;
 
+    m_thumbnailProperties.rcSource.left = 0;
+    m_thumbnailProperties.rcSource.top = 0;
+    m_thumbnailProperties.rcSource.right = size.cx;
+    m_thumbnailProperties.rcSource.bottom = size.cy;
     return true;
 }
 
@@ -163,7 +173,7 @@ void QCloneItem::setSource(QRect source)
         // To go back to following the source size of the source window
         // we have to disable and enable without the rectsource flags.
         d->m_thumbnailProperties.dwFlags &= ~DWM_TNP_RECTSOURCE;
-        enable(m_target);
+        d->enable();
     }
     else
     {
@@ -172,22 +182,23 @@ void QCloneItem::setSource(QRect source)
     }
 }
 
-QRect QCloneItem::getSource()
+QRect QCloneItem::source()
 {
     return QRect(
         QPoint(d->m_thumbnailProperties.rcSource.left, d->m_thumbnailProperties.rcSource.top),
         QPoint(d->m_thumbnailProperties.rcSource.right, d->m_thumbnailProperties.rcSource.bottom));
 }
 
-bool QCloneItem::getSourceClientAreaOnly()
+bool QCloneItem::sourceClientAreaOnly()
 {
     return d->m_thumbnailProperties.fSourceClientAreaOnly;
 }
 
 void QCloneItem::updateTargetWindow()
 {
-    m_target = FindWindow(m_windowClass.isEmpty() ? nullptr : m_windowClass.toStdWString().data(),
+    d->m_source = FindWindow(
+        m_windowClass.isEmpty() ? nullptr : m_windowClass.toStdWString().data(),
         m_windowTitle.isEmpty() ? nullptr : m_windowTitle.toStdWString().data());
 
-    enable(m_target);
+    d->enable();
 }
