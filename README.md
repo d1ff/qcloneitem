@@ -31,4 +31,5 @@ Rectangle {
 **Result:**
 
 ![Example](/example/example.png "Example")
+
 For a more complex example, see the example in the repository.
