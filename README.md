@@ -8,7 +8,7 @@ QCloneItem - Show a clone of another window within your QML application (Windows
 * Window to clone is specified by window class and window title. If window is created after the Clone, call updateTargetWindow to establish connection.
 
 ### Simple Example:
-QML Code:
+**QML Code:**
 ```
 import QtQuick 2.0
 import Clone 1.0
@@ -28,8 +28,7 @@ Rectangle {
 }
 
 ```
-Result:
+**Result:**
+
 ![Example](/example/example.png "Example")
 For a more complex example, see the example in the repository.
-
-More to come
