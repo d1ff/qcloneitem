@@ -1,9 +1,11 @@
-import QtQuick 2.0
+import QtQuick 2.3
+import QtQuick.Window 2.2
 import QtQuick.Controls 1.3
 import Clone 1.0
 
-Rectangle {
+Window {
     id: root
+    visible: true
     width: 640
     height: 480
 
@@ -88,7 +90,7 @@ Rectangle {
         opacity: opacitySlider.value
         sourceClientAreaOnly: clientAreaOnlyCheckBox.checked
         windowTitle: "Calculator"
-        windowClass: "CalcFrame"
+        windowClass: "ApplicationFrameWindow"
         source.x: xSpinner.value
         source.y: ySpinner.value
         source.width: widthSpinner.value
