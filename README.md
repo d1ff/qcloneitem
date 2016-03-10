@@ -1,11 +1,11 @@
 # QCloneItem
 QCloneItem - Show a clone of another window within your QML application (Windows only!)
 
-* Will clone any *top-level* window.
+* Will clone any window. Top level windows work the best, as they can be tracked automatically when resized and moved. If a child window is selected instead, the software will have to translate this into a subregion of the associated top level window instead.
 * Window has to be visible, but can be minimized.
 * The clone respects opacity, sizing (and anchors) and visibility.
 * It is possible to crop the source window (using source property), and exclude non-client area (sourceCLientAreaOnly property).
-* Window to clone is specified by window class and window title. If window is created after the Clone, call updateTargetWindow to establish connection.
+* Window to clone is specified by window class and window title.
 
 ### Simple Example:
 **QML Code:**
