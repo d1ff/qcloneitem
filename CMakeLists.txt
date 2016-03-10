@@ -31,7 +31,6 @@ project(qcloneitem)
 set(CMAKE_AUTOMOC true)
 set(CMAKE_INCLUDE_CURRENT_DIR true)
 
-set(CMAKE_PREFIX_PATH "D:/Qt/5.5/msvc2013_64/")
 option(include_example "Set up example in build dir" OFF)
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
