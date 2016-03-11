@@ -35,8 +35,13 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
+    // Force loading from directory where executable is located
     QDir applicationDirectory = QFileInfo(QGuiApplication::applicationFilePath()).absoluteDir();
     QString mainQml = applicationDirectory.absoluteFilePath(QStringLiteral("main.qml"));
+
+    // Add directory one level up import path to allow starting directly once unextracted
+    applicationDirectory.cdUp();
+    engine.addImportPath(applicationDirectory.absolutePath());
 
     engine.load(mainQml);
 

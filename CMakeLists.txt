@@ -45,23 +45,32 @@ target_compile_options(qcloneitem PRIVATE -W4 -wd4127 -wd6326)
 target_compile_definitions(qcloneitem PRIVATE _UNICODE UNICODE WIN32_LEAN_AND_MEAN NOMINMAX VC_EXTRALEAN)
 target_link_libraries(qcloneitem Qt5::Quick)
 
-if(include_example)
-    set(example_dir ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/)
-    add_executable(cloneexample WIN32
-        example/main.cpp
-        ${example_dir}/Clone/qmldir
-        ${example_dir}/Clone/qcloneitem.dll
-        ${example_dir}/main.qml)
+set(example_dir ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/)
+add_executable(cloneexample WIN32
+    example/main.cpp
+    ${example_dir}/Clone/qmldir
+    ${example_dir}/Clone/qcloneitem.dll
+    ${example_dir}/main.qml)
 
-    target_link_libraries(cloneexample Qt5::Quick)
+target_link_libraries(cloneexample Qt5::Quick)
 
-    add_custom_command(OUTPUT
-        ${example_dir}/main.qml
-        ${example_dir}/Clone/qmldir
-        ${example_dir}/Clone/qcloneitem.dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/example/main.qml" "${example_dir}/main.qml"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/qmldir" "${example_dir}/Clone/qmldir"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:qcloneitem>" "${example_dir}/Clone/qcloneitem.dll"
-        DEPENDS ${CMAKE_SOURCE_DIR}/main.qml ${CMAKE_SOURCE_DIR}/qmldir qcloneitem
-        COMMENT "Copying to output directory")
-endif(include_example)
+add_custom_command(OUTPUT
+    ${example_dir}/main.qml
+    ${example_dir}/Clone/qmldir
+    ${example_dir}/Clone/qcloneitem.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/example/main.qml" "${example_dir}/main.qml"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/qmldir" "${example_dir}/Clone/qmldir"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:qcloneitem>" "${example_dir}/Clone/qcloneitem.dll"
+    DEPENDS ${CMAKE_SOURCE_DIR}/main.qml ${CMAKE_SOURCE_DIR}/qmldir qcloneitem
+    COMMENT "Copying to output directory")
+
+set(CPACK_GENERATOR ZIP)
+set(CPACK_PACKAGE_FILE_NAME	"qcloneitem")
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
+include(CPack)
+
+install(TARGETS qcloneitem RUNTIME DESTINATION clone)
+install(FILES qmldir DESTINATION clone)
+install(TARGETS cloneexample DESTINATION example)
+install(FILES example/main.qml DESTINATION example)
+install(FILES README.md DESTINATION .)
