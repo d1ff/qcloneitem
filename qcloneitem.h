@@ -29,6 +29,7 @@
 #pragma once
 
 #include <QQuickItem>
+#include <QQuickWindow>
 
 class QCloneItemPrivate;
 
@@ -40,6 +41,7 @@ class QCloneItem : public QQuickItem
     Q_PROPERTY(bool sourceClientAreaOnly READ sourceClientAreaOnly WRITE setSourceClientAreaOnly NOTIFY sourceClientAreaOnlyChanged)
     Q_PROPERTY(QString windowClass READ windowClass WRITE setWindowClass NOTIFY windowClassChanged)
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle NOTIFY windowTitleChanged)
+	Q_PROPERTY(QQuickWindow* windowTemplate READ windowTemplate WRITE setWindowTemplate NOTIFY windowTemplateChanged)
 
 public:
     QCloneItem(QQuickItem * parent = 0);
@@ -50,6 +52,7 @@ Q_SIGNALS:
     void sourceClientAreaOnlyChanged();
     void windowTitleChanged();
     void windowClassChanged();
+	void windowTemplateChanged();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
@@ -67,6 +70,9 @@ private:
 
     void setSource(const QRect& source);
     QRect source() const;
+
+	void setWindowTemplate(QQuickWindow* windowTemplate);
+	QQuickWindow* windowTemplate() const;
 
     const QScopedPointer<QCloneItemPrivate> d_ptr;
 };

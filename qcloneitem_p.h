@@ -31,13 +31,14 @@
 #pragma comment(lib, "dwmapi.lib")
 
 #include <QQuickWindow>
+#include <QDebug>
 
 namespace {
     QString WindowClassFromHwnd(HWND hwnd)
     {
         const int windowClassLength = 256; // max length according to MSDN
         const QScopedArrayPointer<wchar_t> windowClass(new wchar_t[windowClassLength]);
-        GetClassName(hwnd, windowClass.data(), windowClassLength);
+        GetClassNameW(hwnd, windowClass.data(), windowClassLength);
         return QString::fromWCharArray(windowClass.data());
     }
 
@@ -45,7 +46,7 @@ namespace {
     {
         const int windowTextLength = GetWindowTextLength(hwnd) + 1;
         const QScopedArrayPointer<wchar_t> windowText(new wchar_t[windowTextLength]);
-        GetWindowText(hwnd, windowText.data(), windowTextLength);
+        GetWindowTextW(hwnd, windowText.data(), windowTextLength);
         return QString::fromWCharArray(windowText.data());
     }
 }
@@ -89,6 +90,7 @@ private:
         {
             const QString windowText = WindowTitleFromHwnd(hwnd);
             const QString windowClass = WindowClassFromHwnd(hwnd);
+			qDebug() << "Window created:" << windowText << "@" << windowClass;
             emit instance().windowCreated(windowClass, windowText, hwnd);
         }
         else if (event == EVENT_OBJECT_LOCATIONCHANGE)
@@ -177,6 +179,18 @@ private:
         }
     }
 
+	QQuickWindow* windowTemplate() const {
+		return nullptr;
+	}
+
+	void setWindowTemplate(QQuickWindow* windowTemplate) {
+		Q_Q(QCloneItem);
+		setWindowClass(WindowClassFromHwnd((HWND)windowTemplate->winId()));
+		setWindowTitle(WindowTitleFromHwnd((HWND)windowTemplate->winId()));
+		setSource((HWND)windowTemplate->winId());
+		emit q->windowTemplateChanged();
+	}
+
     QRect source() const
     {
         return QRect(
@@ -221,19 +235,20 @@ private:
 
     void setDestination(const QRectF& _destination)
     {
+		setSource(matchSourceToChildWindow());
         Q_Q(QCloneItem);
 
         QRect dst = q->mapRectToScene(_destination).toRect();
         dst.adjust(0, 0, 1, 1);
 
         const QRect src = source();
-        const double scale = std::min(
+        const double scale = (std::min)(
             (double)dst.width() / (double)src.width(),
             (double)dst.height() / (double)src.height());
 
-        dst.setWidth(src.width() * scale);
-        dst.setHeight(src.height() * scale);
-
+		dst.setWidth(src.width() * ((double)dst.width() / (double)src.width()));
+		dst.setHeight(src.height() * ((double)dst.height() / (double)src.height()));
+		
         if (dst == destination())
             return;
 
@@ -355,8 +370,8 @@ private:
         {
             m_thumbnailProperties.rcSource.left = 0;
             m_thumbnailProperties.rcSource.top = 0;
-            m_thumbnailProperties.rcSource.right = size.cx;
-            m_thumbnailProperties.rcSource.bottom = size.cy;
+            m_thumbnailProperties.rcSource.right = (std::max)(size.cx, m_thumbnailProperties.rcSource.right);
+            m_thumbnailProperties.rcSource.bottom = (std::max)(size.cy, m_thumbnailProperties.rcSource.bottom);
         }
 
         updateThumbnailProperties();

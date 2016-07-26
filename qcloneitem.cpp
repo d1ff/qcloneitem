@@ -94,6 +94,18 @@ QRect QCloneItem::source() const
     return d->source();
 }
 
+void QCloneItem::setWindowTemplate(QQuickWindow* windowTemplate)
+{
+	Q_D(QCloneItem);
+	d->setWindowTemplate(windowTemplate);
+}
+
+QQuickWindow* QCloneItem::windowTemplate() const
+{
+	Q_D(const QCloneItem);
+	return d->windowTemplate();
+}
+
 bool QCloneItem::sourceClientAreaOnly() const
 {
     Q_D(const QCloneItem);
